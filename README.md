@@ -1,4 +1,4 @@
-# RemixJS SSE Response and hook
+# Remix SSE Response and React Hhook
 
 In `/apps/routes/counter.ts`:
 
