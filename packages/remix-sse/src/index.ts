@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 
-
 export function useSse<T>(
   name: string,
   url: string,
