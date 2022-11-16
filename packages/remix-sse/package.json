@@ -6,7 +6,9 @@
   "types": "./types/index.d.ts",
   "files": [
     "./dist/**/*",
-    "./types/**/*"
+    "./types/**/*",
+    "./README.md"
+
   ],
   "scripts": {
     "prettier": "prettier './src/**/*.ts' --write",
