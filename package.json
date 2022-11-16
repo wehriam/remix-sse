@@ -1,0 +1,13 @@
+{
+  "name": "@wehriam/remix-sse-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "author": "John Wehr <johnwehr@gmail.com>",
+  "license": "MIT",
+  "packageManager": "yarn@3.3.0"
+}

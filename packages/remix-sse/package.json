@@ -1,0 +1,33 @@
+{
+  "name": "@wehriam/remix-sse",
+  "sideEffects": false,
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "./dist/**/*",
+    "./types/**/*"
+  ],
+  "scripts": {
+    "prepare": "husky install",
+    "prettier": "prettier './src/**/*.ts' --write",
+    "lint:eslint": "eslint --cache --fix --ext .ts ./src",
+    "lint:typescript": "tsc --noEmit",
+    "lint": "yarn prettier; yarn lint:eslint; yarn lint:typescript",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@remix-run/eslint-config": "^1.7.5",
+    "@types/node": "^18.11.9",
+    "@types/react": "^18.0.25",
+    "eslint": "^8.27.0",
+    "husky": "^8.0.2",
+    "typescript": "^4.9.3"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
