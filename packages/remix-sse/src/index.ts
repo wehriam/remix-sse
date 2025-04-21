@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 
+const eventSourceMap = new Map<string, [EventSource, number]>();
+
 export function useSse<T>(
   name: string,
   url: string,
   options: EventSourceInit = { withCredentials: false }
 ) {
   const [data, setData] = useState<T>();
+  const eventSourceKey = `${name}:${url}:${options.withCredentials ? "true" : "false"}`;
   useEffect(() => {
     let previousDataString: string | void = undefined;
     function handleMessageEvent(messageEvent: MessageEvent) {
@@ -16,13 +19,19 @@ export function useSse<T>(
       setData(JSON.parse(dataString));
       previousDataString = dataString;
     }
-    const eventSource = new EventSource(url, options);
-    eventSource.addEventListener(name, handleMessageEvent);
+    const eventSourceMapValue = eventSourceMap.get(eventSourceKey) || [new EventSource(url, options), 0];
+    eventSourceMapValue[1] = eventSourceMapValue[1] + 1;
+    eventSourceMap.set(eventSourceKey, eventSourceMapValue);
+    eventSourceMapValue[0].addEventListener(name, handleMessageEvent);
     return () => {
-      eventSource.removeEventListener(name, handleMessageEvent);
-      eventSource.close();
+      eventSourceMapValue[0].removeEventListener(name, handleMessageEvent);
+      eventSourceMapValue[1] = eventSourceMapValue[1] - 1;
+      if (eventSourceMapValue[1] <= 0) {
+        eventSourceMapValue[0].close();
+        eventSourceMap.delete(eventSourceKey);
+      }
     };
-  }, [name, url, options.withCredentials]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [eventSourceKey]); // eslint-disable-line react-hooks/exhaustive-deps
   return data;
 }
 
@@ -32,9 +41,10 @@ export class SseResponse extends Response {
   signal: AbortSignal;
 
   constructor(request: Request, options?: ResponseInit) {
-    const signal = request.signal;
-    const textencoder = new TextEncoder();
 
+    const signal = request.signal;
+   
+    const textencoder = new TextEncoder();
     const { readable, writable } = new TransformStream({
       start(controller) {
         const handleAbort = () => {
@@ -49,11 +59,13 @@ export class SseResponse extends Response {
       },
       transform(chunk, controller) {
         controller.enqueue(textencoder.encode(chunk));
-      },
+      }
     });
 
     const mergedHeaders = Object.assign({}, options ? options.headers : {}, {
       "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "X-Accel-Buffering": "no"
     });
 
     const mergedOptions = Object.assign({}, options, {
@@ -64,6 +76,7 @@ export class SseResponse extends Response {
 
     this.signal = signal;
     this.writer = writable.getWriter();
+    
   }
 
   async send(name: string, data: unknown) {
